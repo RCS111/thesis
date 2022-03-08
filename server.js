@@ -10,6 +10,7 @@ const flash = require("express-flash");
 const session = require("express-session");
 const methodOverride = require("method-override");
 const User = require("./models/User");
+const bcrypt = require("bcryptjs");
 const {
   checkAuthenticated,
   checkNotAuthenticated,
@@ -52,7 +53,7 @@ app.use(methodOverride("_method"));
 app.use(express.static("public"));
 
 app.get("/", checkAuthenticated, (req, res) => {
-  res.render("index");
+  res.render("index", { name: req.user.name });
 });
 
 app.get("/register", checkNotAuthenticated, (req, res) => {
@@ -62,6 +63,46 @@ app.get("/register", checkNotAuthenticated, (req, res) => {
 app.get("/login", checkNotAuthenticated, (req, res) => {
   res.render("login");
 });
+
+app.post(
+  "/login",
+  checkNotAuthenticated,
+  passport.authenticate("local", {
+    successRedirect: "/",
+    failureRedirect: "/login",
+    failureFlash: true,
+  })
+);
+
+app.post("/register", checkNotAuthenticated, async (req, res) => {
+  const userFound = await User.findOne({ email: req.body.email });
+
+  if (userFound) {
+    req.flash("error", "User with that email already exist");
+    res.redirect("/register");
+  } else {
+    try {
+      const hashedPassword = await bcrypt.hash(req.body.password, 10);
+      const user = new User({
+        name: req.body.name,
+        email: req.body.email, // <- ito yun may email ka pero wala sa schema mousername
+        password: hashedPassword,
+      });
+
+      await user.save();
+      res.redirect("/login");
+    } catch (error) {
+      console.log(error);
+      res.redirect("/register");
+    }
+  }
+});
+
+app.delete("/logout", (req, res) => {
+  req.logOut();
+  res.redirect("/login");
+});
+
 mongoose
   .connect(uri, {
     useNewUrlParser: true,
