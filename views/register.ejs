@@ -10,16 +10,14 @@
   <body>
     <div class="main">
       <h1>SIGNIN UP</h1>
+      <% if (messages) { %>
+        <p><%= messages.error %></p>
+        <% } %>
       <form action="/register" method="POST">
-        <input type="username" name="username" placeholder="Username" />
+        <input type="name" name="name" placeholder="My Name" />
+        <input type="email" name="email" placeholder="email@email.com" />
         <input type="password" name="password" placeholder="********" />
-        <input type="fname" name="fname" placeholder="First Name" />
-        <input type="lname" name="lname" placeholder="Last Name" />
-        <input type="mname" name="mname" placeholder="Middle Name" />
-        <input type="ename" name="ename" placeholder="Extension" />
-        <input type="sex" name="sex" placeholder="Sex" />
-        <input type="address" name="address" placeholder="Address" />
-        <button>SIGN IN</button>
+        <button>SIGN UP</button>
       </form>
     </div>
   </body>
